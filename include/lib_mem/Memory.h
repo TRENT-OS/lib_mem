@@ -1,7 +1,7 @@
 #if !defined(MEMORY_H)
 #define MEMORY_H
 
-#include "Memory_Impl.h"
+#include "lib_mem/Memory_Impl.h"
 
 void*
 Memory_alloc(size_t size);
