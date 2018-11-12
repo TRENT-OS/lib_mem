@@ -4,8 +4,7 @@
  *  Copyright (C) 2018, Hensoldt Cyber GmbH
  */
 
-#if !defined(MEMORY_IMPL_H)
-#define MEMORY_IMPL_H
+#pragma once
 
 #include "lib_compiler/compiler.h"
 #include "Memory_Config.h"
@@ -54,5 +53,3 @@ Memory_free(void* ptr)
 #   endif
 
 #endif
-
-#endif //#if !defined(MEMORY_IMPL_H)

@@ -4,8 +4,7 @@
  *  Copyright (C) 2018, Hensoldt Cyber GmbH
  */
 
-#if !defined(MEMORY_H)
-#define MEMORY_H
+#pragma once
 
 #include "lib_mem/Memory_Impl.h"
 
@@ -20,6 +19,3 @@ Memory_realloc(void* ptr, size_t size);
 
 void
 Memory_free(void* ptr);
-
-#endif
-
