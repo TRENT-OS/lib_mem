@@ -1,10 +1,14 @@
 #if !defined(MEMORY_IMPL_H)
 #define MEMORY_IMPL_H
 
-#include "lib_compiler/compiler.h"
-#include "Memory_Config.h"
+#define MEMORY_IMPL_XSTR(d)    MEMORY_IMPL_STR(d)
+#define MEMORY_IMPL_STR(d)     #d
 
-#include <string.h>
+#if !defined(MEMORY_CONFIG_H_FILE)
+#   error a configuration file must be provided! See Memory_Config.h.example
+#else
+#   include MEMORY_IMPL_XSTR(MEMORY_CONFIG_H_FILE)
+#endif
 
 /* we do not forsee the converse of this define because if one tries
  * to complile implicitely a system alloc.. the linker will complain about
@@ -13,6 +17,11 @@
 #include <stdlib.h>
 
 #   if defined(Memory_Config_USE_STDLIB_ALLOC_INLINE)
+#       if defined(COMPILER_H_FILE)
+#           include MEMORY_IMPL_XSTR(COMPILER_H_FILE)
+#       else
+#           include "lib_compiler/compiler.h"
+#       endif
 
 INLINE void*
 Memory_alloc(size_t size)
