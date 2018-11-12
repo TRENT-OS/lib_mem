@@ -1,3 +1,9 @@
+/*
+ *  LibMem
+ *
+ *  Copyright (C) 2018, Hensoldt Cyber GmbH
+ */
+
 #if !defined(MEMORY_H)
 #define MEMORY_H
 
