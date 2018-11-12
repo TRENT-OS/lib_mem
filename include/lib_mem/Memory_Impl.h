@@ -40,13 +40,13 @@ Memory_free(void* ptr)
     free(ptr);
 }
 
-#   else
+#   else // not defined(Memory_Config_USE_STDLIB_ALLOC_INLINE)
 
 #       define Memory_alloc(size)           malloc(size)
 #       define Memory_calloc(nmemb, size)   calloc(nmemb, size)
 #       define Memory_realloc(ptr, size)    realloc(ptr, size)
 #       define Memory_free(ptr)             free(ptr)
 
-#   endif
+#   endif // [not] defined(Memory_Config_USE_STDLIB_ALLOC_INLINE)
 
-#endif
+#endif // defined(Memory_Config_USE_STDLIB_ALLOC)
