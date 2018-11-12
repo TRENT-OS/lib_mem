@@ -6,15 +6,12 @@
 
 #pragma once
 
-#include "lib_compiler/compiler.h"
 #include "Memory_Config.h"
 
-#include <string.h>
-
-/* we do not forsee the converse of this define because if one tries
- * to complile implicitely a system alloc.. the linker will complain about
- * the existence of the implementations */
 #if defined(Memory_Config_USE_STDLIB_ALLOC)
+
+#include "lib_compiler/compiler.h"
+
 #include <stdlib.h>
 
 #   if defined(Memory_Config_USE_STDLIB_ALLOC_INLINE)

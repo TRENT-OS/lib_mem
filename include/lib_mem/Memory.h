@@ -8,6 +8,8 @@
 
 #include "lib_mem/Memory_Impl.h"
 
+#include <stddef.h>
+
 void*
 Memory_alloc(size_t size);
 
