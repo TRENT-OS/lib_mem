@@ -34,6 +34,9 @@ typedef size_t
 (*Nvm_ReadT)(Nvm* self, size_t addr, char* buffer, size_t length);
 
 typedef size_t
+(*Nvm_EraseT)(Nvm* self, size_t addr, size_t length);
+
+typedef size_t
 (*Nvm_GetSizeT)(Nvm* self);
 
 typedef void
@@ -43,6 +46,7 @@ typedef struct
 {
     Nvm_WriteT       write;
     Nvm_ReadT        read;
+    Nvm_EraseT       erase;
     Nvm_GetSizeT     getSize;
     Nvm_DtorT        dtor;
 }
