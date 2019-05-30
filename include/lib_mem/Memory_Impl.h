@@ -3,10 +3,7 @@
  *
  *  Copyright (C) 2018, Hensoldt Cyber GmbH
  */
-
 #pragma once
-
-#include "Memory_Config.h"
 
 #if defined(Memory_Config_USE_STDLIB_ALLOC)
 
@@ -15,6 +12,11 @@
 #include <stdlib.h>
 
 #   if defined(Memory_Config_USE_STDLIB_ALLOC_INLINE)
+#       if defined(COMPILER_H_FILE)
+#           include MEMORY_IMPL_XSTR(COMPILER_H_FILE)
+#       else
+#           include "lib_compiler/compiler.h"
+#       endif
 
 INLINE void*
 Memory_alloc(size_t size)
