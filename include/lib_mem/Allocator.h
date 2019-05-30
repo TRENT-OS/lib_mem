@@ -66,7 +66,7 @@ INLINE void
 Allocator_free(Allocator* self, void* ptr)
 {
     Debug_ASSERT_SELF(self);
-    return self->vtable->alloc(self, ptr);
+    return self->vtable->free(self, ptr);
 }
 
 INLINE void
