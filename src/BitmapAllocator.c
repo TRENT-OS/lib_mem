@@ -2,13 +2,16 @@
 
 #include "lib_mem/BitmapAllocator.h"
 #include "lib_debug/Debug.h"
+#include "lib_mem/Memory.h"
+#include "lib_logs/Logger.h"
+
 
 #include <stdbool.h>
 #include <limits.h>
 
 
 /* Defines -------------------------------------------------------------------*/
-#define BITS_IN_A_BITMAP_SLOT(self) (sizeof((self)->bitmap[0]) * CHAR_BIT)
+#define BITS_IN_A_BITMAP_SLOT(self) (sizeof(*(self)->bitmap) * CHAR_BIT)
 #define SLOT(self, elementNum) ((elementNum) / BITS_IN_A_BITMAP_SLOT((self)))
 #define OFFSET(self, elementNum) ((elementNum) % BITS_IN_A_BITMAP_SLOT((self)))
 #define ELEMENT_NUM(self, slot, offset)\
@@ -89,7 +92,7 @@ findContiguousFreeElements(BitmapAllocator* self, size_t numElements)
     size_t amount = 0;
     size_t needle = -1;
 
-    for (size_t slot = 0; slot < BitmapAllocator_MAX_NUM_BITMAPS; slot++)
+    for (size_t slot = 0; slot < SLOT(self, self->numElements); slot++)
     {
         for (size_t offset = 0;
              offset < BITS_IN_A_BITMAP_SLOT(self);
@@ -226,11 +229,54 @@ static const Allocator_Vtable BitmapAllocator_vtable =
 
 /* Public functions ----------------------------------------------------------*/
 
+#if !defined(Memory_Config_STATIC)
 bool
 BitmapAllocator_ctor(BitmapAllocator* self,
-                     void* buffer,
                      size_t elementSize,
                      size_t numElements)
+{
+    Debug_ASSERT_SELF(self);
+
+    bool retval = false;
+    size_t bitmapSize =
+        numElements / BITS_IN_A_BITMAP_SLOT(self) +
+        numElements % BITS_IN_A_BITMAP_SLOT(self) ? 1 : 0;
+
+    void* buffer           = Memory_alloc(numElements * elementSize);
+    void* bitmap           = Memory_calloc(1, bitmapSize);
+    void* boundaryBitmap   = Memory_calloc(1, bitmapSize);
+
+    if (NULL == buffer || NULL == bitmap || NULL == boundaryBitmap)
+    {
+        retval = false;
+
+        Memory_free(self->baseAddr);
+        Memory_free((void*) self->bitmap);
+        Memory_free((void*) self->boundaryBitmap);
+    }
+    else
+    {
+        self->isStatic = false;
+
+        retval = BitmapAllocator_ctorStatic(self,
+                                            buffer,
+                                            bitmap,
+                                            boundaryBitmap,
+                                            elementSize,
+                                            numElements);
+    }
+    return retval;
+}
+
+#endif
+
+bool
+BitmapAllocator_ctorStatic(BitmapAllocator* self,
+                           void* buffer,
+                           void* bitmap,
+                           void* boundaryBitmap,
+                           size_t elementSize,
+                           size_t numElements)
 {
     Debug_ASSERT_SELF(self);
 
@@ -239,7 +285,10 @@ BitmapAllocator_ctor(BitmapAllocator* self,
 
     bool retval = false;
 
-    if (!numElements || NULL == buffer)
+    if (!numElements
+        || NULL == buffer
+        || NULL == bitmap
+        || NULL == boundaryBitmap)
     {
         retval = false;
     }
@@ -248,7 +297,7 @@ BitmapAllocator_ctor(BitmapAllocator* self,
         memset(self, 0, sizeof(*self));
 
         if (numElements >
-            BITS_IN_A_BITMAP_SLOT(self) * BitmapAllocator_MAX_NUM_BITMAPS)
+            BITS_IN_A_BITMAP_SLOT(self) * SLOT(self, numElements))
         {
             // the bitmap is too little, BitmapAllocator_MAX_NUM_BITMAPS needs
             // to be defined differently
@@ -256,9 +305,11 @@ BitmapAllocator_ctor(BitmapAllocator* self,
         }
         else
         {
-            self->baseAddr    = buffer;
-            self->elementSize = elementSize;
-            self->numElements = numElements;
+            self->baseAddr          = buffer;
+            self->bitmap            = bitmap;
+            self->boundaryBitmap    = boundaryBitmap;
+            self->elementSize       = elementSize;
+            self->numElements       = numElements;
 
             self->parent.vtable = &BitmapAllocator_vtable;
 
@@ -327,6 +378,15 @@ BitmapAllocator_dtor(Allocator* stream)
 {
     BitmapAllocator* self = (BitmapAllocator*) stream;
     Debug_ASSERT_SELF(self);
+
+#if !defined(Memory_Config_STATIC)
+    if (!self->isStatic)
+    {
+        Memory_free(self->baseAddr);
+        Memory_free((void*) self->bitmap);
+        Memory_free((void*) self->boundaryBitmap);
+    }
+#endif
 }
 
 

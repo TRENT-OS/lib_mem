@@ -14,10 +14,10 @@ extern "C"
 #include <limits.h>
 }
 
-#define NUM_MEMORY_ELEMENTS ((sizeof(BitMapInt) * CHAR_BIT) * BitmapAllocator_MAX_NUM_BITMAPS)
+#define NUM_MEMORY_ELEMENTS ((sizeof(BitMapInt) * CHAR_BIT) * 2)
+#define ALLOCATOR_BUFF_SIZE NUM_MEMORY_ELEMENTS * sizeof(uint64_t)
 
 static BitmapAllocator bmAllocator;
-static char allocatorBuff[NUM_MEMORY_ELEMENTS * sizeof(uint64_t)];
 static void* baseAddr = NULL;
 
 class Test_BitmapAllocator : public testing::Test
@@ -28,7 +28,6 @@ class Test_BitmapAllocator : public testing::Test
 TEST(Test_BitmapAllocator, construction)
 {
     bool ok = BitmapAllocator_ctor(&bmAllocator,
-                                   allocatorBuff,
                                    sizeof(uint64_t),
                                    NUM_MEMORY_ELEMENTS);
     ASSERT_TRUE(ok);
@@ -75,16 +74,16 @@ TEST(Test_BitmapAllocator, create_a_hole_and_find_back_space_there)
 // test free all memory and then make big alloc
 TEST(Test_BitmapAllocator, free_all_and_realloc_in_once)
 {
-    for (unsigned i = 0; i < sizeof(allocatorBuff); i++)
+    for (unsigned i = 0; i < ALLOCATOR_BUFF_SIZE; i++)
     {
         BitmapAllocator_free(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
                              &((char*) baseAddr)[i]);
     }
     void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                       sizeof(allocatorBuff) + 1);
+                                       ALLOCATOR_BUFF_SIZE + 1);
     ASSERT_EQ(addr, nullptr);
     addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                 sizeof(allocatorBuff));
+                                 ALLOCATOR_BUFF_SIZE);
     ASSERT_EQ(addr, baseAddr);
 }
 

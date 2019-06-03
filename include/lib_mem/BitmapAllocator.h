@@ -30,9 +30,6 @@
 
 #define BitmapAllocator_TO_ALLOCATOR(self)  (&(self)->parent)
 
-#if !defined BitmapAllocator_MAX_NUM_BITMAPS
-#define BitmapAllocator_MAX_NUM_BITMAPS 2
-#endif
 
 /* Exported types ------------------------------------------------------------*/
 
@@ -44,8 +41,9 @@ struct BitmapAllocator
     void*       baseAddr;
     size_t      elementSize;
     size_t      numElements;
-    BitMapInt   bitmap[BitmapAllocator_MAX_NUM_BITMAPS];
-    BitMapInt   boundaryBitmap[BitmapAllocator_MAX_NUM_BITMAPS];
+    BitMapInt*  bitmap;
+    BitMapInt*  boundaryBitmap;
+    bool        isStatic;
 };
 
 
@@ -53,11 +51,22 @@ struct BitmapAllocator
 /* Exported dynamic functions ----------------------------------------------- */
 /* Exported static functions -------------------------------------------------*/
 
+/// TODO: document
+
+#if !defined(Memory_Config_STATIC)
 bool
 BitmapAllocator_ctor(BitmapAllocator* self,
-                     void* buffer,
                      size_t elementSize,
                      size_t numElements);
+#endif
+
+bool
+BitmapAllocator_ctorStatic(BitmapAllocator* self,
+                           void* buffer,
+                           void* bitmap,
+                           void* boundaryBitmap,
+                           size_t elementSize,
+                           size_t numElements);
 
 void*
 BitmapAllocator_alloc(Allocator* allocator, size_t size);
