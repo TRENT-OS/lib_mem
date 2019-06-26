@@ -28,10 +28,10 @@
 typedef struct Nvm Nvm;
 
 typedef size_t
-(*Nvm_WriteT)(Nvm* self, size_t addr, char const* buffer, size_t length);
+(*Nvm_WriteT)(Nvm* self, size_t addr, void const* buffer, size_t length);
 
 typedef size_t
-(*Nvm_ReadT)(Nvm* self, size_t addr, char* buffer, size_t length);
+(*Nvm_ReadT)(Nvm* self, size_t addr, void* buffer, size_t length);
 
 typedef size_t
 (*Nvm_EraseT)(Nvm* self, size_t addr, size_t length);
@@ -75,7 +75,7 @@ struct Nvm
  *
  */
 INLINE size_t
-Nvm_write(Nvm* self, size_t addr, char const* buffer, size_t length)
+Nvm_write(Nvm* self, size_t addr, void const* buffer, size_t length)
 {
     Debug_ASSERT_SELF(self);
     return self->vtable->write(self, addr, buffer, length);
@@ -94,7 +94,7 @@ Nvm_write(Nvm* self, size_t addr, char const* buffer, size_t length)
  *
  */
 INLINE size_t
-Nvm_read(Nvm* self, size_t addr, char* buffer, size_t length)
+Nvm_read(Nvm* self, size_t addr, void* buffer, size_t length)
 {
     Debug_ASSERT_SELF(self);
     return self->vtable->read(self, addr, buffer, length);
