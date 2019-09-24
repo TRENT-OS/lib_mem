@@ -238,9 +238,8 @@ BitmapAllocator_ctor(BitmapAllocator* self,
     Debug_ASSERT_SELF(self);
 
     bool retval = false;
-    size_t bitmapSize =
-        numElements / BITS_IN_A_BITMAP_SLOT(self) +
-        numElements % BITS_IN_A_BITMAP_SLOT(self) ? 1 : 0;
+    size_t bitmapSize = numElements / CHAR_BIT +
+                        (numElements % CHAR_BIT ? 1 : 0);
 
     void* buffer           = Memory_alloc(numElements * elementSize);
     void* bitmap           = Memory_calloc(1, bitmapSize);
