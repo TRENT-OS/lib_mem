@@ -7,11 +7,11 @@
 
 
 #include <stdbool.h>
-#include <limits.h>
 
 
 /* Defines -------------------------------------------------------------------*/
-#define BITS_IN_A_BITMAP_SLOT(self) (sizeof(*(self)->bitmap) * CHAR_BIT)
+#define BITS_IN_A_BITMAP_SLOT(self)\
+    (sizeof(BitmapAllocator_BitmapSlot) * CHAR_BIT)
 #define SLOT(self, elementNum) ((elementNum) / BITS_IN_A_BITMAP_SLOT((self)))
 #define OFFSET(self, elementNum) ((elementNum) % BITS_IN_A_BITMAP_SLOT((self)))
 #define ELEMENT_NUM(self, slot, offset)\
@@ -92,7 +92,7 @@ findContiguousFreeElements(BitmapAllocator* self, size_t numElements)
     size_t amount = 0;
     size_t needle = -1;
 
-    for (size_t slot = 0; slot < SLOT(self, self->numElements); slot++)
+    for (size_t slot = 0; slot <= SLOT(self, self->numElements); slot++)
     {
         for (size_t offset = 0;
              offset < BITS_IN_A_BITMAP_SLOT(self);
@@ -108,7 +108,7 @@ findContiguousFreeElements(BitmapAllocator* self, size_t numElements)
             {
                 //Debug_LOG_TRACE("%s: free at slot %zd offset %zd",
                 //                __func__, slot, offset);
-                needle = (-1 == needle) ? elementNum : needle;
+                needle = ((-1 == needle) ? elementNum : needle);
                 if (++amount >= numElements)
                 {
                     //Debug_LOG_TRACE("%s: found with needle %zu",
@@ -208,10 +208,11 @@ findBoundaryOfAllocatedMemory(BitmapAllocator* self, void* ptr)
 
 // precondition is that ptr and boundary are within our boundaries
 INLINE size_t
-getElementsGap(BitmapAllocator* self, void* ptr, void* boundary)
+getNumElements(BitmapAllocator* self, void* ptr, void* boundary)
 {
     Debug_ASSERT(isInRange(self, ptr));
     Debug_ASSERT(isInRange(self, boundary));
+    Debug_ASSERT(boundary >= ptr);
 
     return (boundary - ptr) / self->elementSize + 1;
 }
@@ -238,8 +239,7 @@ BitmapAllocator_ctor(BitmapAllocator* self,
     Debug_ASSERT_SELF(self);
 
     bool retval = false;
-    size_t bitmapSize = numElements / CHAR_BIT +
-                        (numElements % CHAR_BIT ? 1 : 0);
+    size_t bitmapSize = BitmapAllocator_BITMAP_SIZE(numElements);
 
     void* buffer           = Memory_alloc(numElements * elementSize);
     void* bitmap           = Memory_calloc(1, bitmapSize);
@@ -295,25 +295,15 @@ BitmapAllocator_ctorStatic(BitmapAllocator* self,
     {
         memset(self, 0, sizeof(*self));
 
-        if (numElements >
-            BITS_IN_A_BITMAP_SLOT(self) * SLOT(self, numElements))
-        {
-            // the bitmap is too little, BitmapAllocator_MAX_NUM_BITMAPS needs
-            // to be defined differently
-            retval = false;
-        }
-        else
-        {
-            self->baseAddr          = buffer;
-            self->bitmap            = bitmap;
-            self->boundaryBitmap    = boundaryBitmap;
-            self->elementSize       = elementSize;
-            self->numElements       = numElements;
+        self->baseAddr          = buffer;
+        self->bitmap            = bitmap;
+        self->boundaryBitmap    = boundaryBitmap;
+        self->elementSize       = elementSize;
+        self->numElements       = numElements;
 
-            self->parent.vtable = &BitmapAllocator_vtable;
+        self->parent.vtable = &BitmapAllocator_vtable;
 
-            retval = true;
-        }
+        retval = true;
     }
     return retval;
 }
@@ -333,22 +323,29 @@ BitmapAllocator_alloc(Allocator* allocator, size_t size)
     else
     {
         size_t numNeededElements = size / self->elementSize
-                                   + (size % self->elementSize ? 1 : 0);
+                                   + ((size % self->elementSize) ? 1 : 0);
         foundAddr = findContiguousFreeElements(self, numNeededElements);
 
         if (NULL == foundAddr)
         {
-            // do nothing;
+            Debug_LOG_WARNING("%s: size %zd, allocation failed, allocated %zd out of %zd elements",
+                              __func__,
+                              size,
+                              self->allocatedElements,
+                              self->numElements);
         }
         else
         {
+            self->allocatedElements += numNeededElements;
             markBitmapBusy(self, foundAddr, numNeededElements);
+            Debug_LOG_TRACE("%s: size %zd, result is addr @%p, allocated %zd out of %zd elements",
+                            __func__,
+                            size,
+                            foundAddr,
+                            self->allocatedElements,
+                            self->numElements);
         }
     }
-    Debug_LOG_TRACE("%s: size %zd, result is addr @%p",
-                    __func__,
-                    size,
-                    foundAddr);
     return foundAddr;
 }
 
@@ -358,18 +355,28 @@ BitmapAllocator_free(Allocator* allocator, void* ptr)
     BitmapAllocator* self = (BitmapAllocator*) allocator;
     Debug_ASSERT_SELF(self);
 
-    if (NULL == ptr || !isAllocated(self, ptr))
+    if (NULL == ptr)
     {
         // do nothing
+    }
+    else if (!isAllocated(self, ptr))
+    {
+        Debug_LOG_WARNING("%s: ptr @%p was not allocated!", __func__, ptr);
     }
     else
     {
         void* boundary      = findBoundaryOfAllocatedMemory(self, ptr);
-        size_t elementsGap  = getElementsGap(self, ptr, boundary);
+        size_t numElements  = getNumElements(self, ptr, boundary);
 
-        markBitmapFree(self, ptr, elementsGap);
+        markBitmapFree(self, ptr, numElements);
+
+        self->allocatedElements -= numElements;
+        Debug_LOG_TRACE("%s: addr @%p, allocated %zd out of %zd elements",
+                        __func__,
+                        ptr,
+                        self->allocatedElements,
+                        self->numElements);
     }
-    Debug_LOG_TRACE("%s: addr @%p", __func__, ptr);
 }
 
 void

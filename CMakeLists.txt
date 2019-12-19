@@ -11,6 +11,12 @@ project(lib_mem C)
 
 add_library(${PROJECT_NAME} INTERFACE)
 
+target_sources(${PROJECT_NAME}
+    INTERFACE
+        "src/AllocatorSafe.c"
+        "src/BitmapAllocator.c"
+)
+
 target_include_directories(${PROJECT_NAME}
     INTERFACE
         "include"

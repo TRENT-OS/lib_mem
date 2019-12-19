@@ -24,26 +24,30 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdint.h>
-
+#include <limits.h>
 
 /* Exported macro ------------------------------------------------------------*/
 
 #define BitmapAllocator_TO_ALLOCATOR(self)  (&(self)->parent)
 
+#define BitmapAllocator_BITMAP_SIZE(NUM_EL)\
+    ((NUM_EL) / CHAR_BIT + ((NUM_EL) % CHAR_BIT ? 1 : 0))
 
 /* Exported types ------------------------------------------------------------*/
 
 typedef struct BitmapAllocator BitmapAllocator;
+typedef BitMapInt BitmapAllocator_BitmapSlot;
 
 struct BitmapAllocator
 {
-    Allocator   parent;
-    void*       baseAddr;
-    size_t      elementSize;
-    size_t      numElements;
-    BitMapInt*  bitmap;
-    BitMapInt*  boundaryBitmap;
-    bool        isStatic;
+    Allocator                   parent;
+    void*                       baseAddr;
+    size_t                      elementSize;
+    size_t                      numElements;
+    size_t                      allocatedElements;
+    BitmapAllocator_BitmapSlot* bitmap;
+    BitmapAllocator_BitmapSlot* boundaryBitmap;
+    bool                        isStatic;
 };
 
 
