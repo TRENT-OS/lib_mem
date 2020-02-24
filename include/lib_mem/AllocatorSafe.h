@@ -6,13 +6,9 @@
  *
  * @brief a thread safe version of bitmap based allocator
  *
- *
- * @author Carmelo Pintaudi
- *
  * Copyright (C) 2019, Hensoldt Cyber GmbH
  */
-#if !defined(ALLOCATOR_SAFE_H)
-#define ALLOCATOR_SAFE_H
+#pragma once
 
 /* Includes ------------------------------------------------------------------*/
 
@@ -52,5 +48,4 @@ AllocatorSafe_free(Allocator* allocator, void* ptr);
 void
 AllocatorSafe_dtor(Allocator* allocator);
 
-#endif /* ALLOCATOR_SAFE_H */
 ///@}

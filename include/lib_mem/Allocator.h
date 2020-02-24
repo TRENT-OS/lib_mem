@@ -6,13 +6,9 @@
  *
  * @brief interface of a memory allocator
  *
- *
- * @author Carmelo Pintaudi
- *
  * Copyright (C) 2019, Hensoldt Cyber GmbH
  */
-#if !defined(ALLOCATOR_H)
-#define ALLOCATOR_H
+#pragma once
 
 /* Includes ------------------------------------------------------------------*/
 
@@ -110,5 +106,4 @@ Allocator_realloc(Allocator* self, void* ptr, size_t size)
     return dest;
 }
 
-#endif /* ALLOCATOR_H */
 ///@}

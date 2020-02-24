@@ -1,8 +1,5 @@
 /*
- * File:   Test_BitmapAllocator
- * Author: cardone
- *
- * Created on 18-dic-2018, 20.17.35
+ *  Copyright (C) 2019, Hensoldt Cyber GmbH
  */
 
 #include <gtest/gtest.h>

@@ -6,12 +6,9 @@
  *
  * @brief Non Volatile Memory abstract interface
  *
- * @author Carmelo Pintaudi
- *
  * Copyright (C) 2019, Hensoldt Cyber GmbH
  */
-#if !defined(NVM_H)
-#define NVM_H
+#pragma once
 
 /* Includes ------------------------------------------------------------------*/
 
@@ -112,6 +109,4 @@ Nvm_getSize(Nvm* self)
     Debug_ASSERT_SELF(self);
     return self->vtable->getSize(self);
 }
-
-#endif /* NVM_H */
 ///@}

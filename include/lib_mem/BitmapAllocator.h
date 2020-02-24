@@ -7,12 +7,9 @@
  * @brief a bitmap based allocator
  *
  *
- * @author Carmelo Pintaudi
- *
  * Copyright (C) 2019, Hensoldt Cyber GmbH
  */
-#if !defined(BITMAP_ALLOCATOR_H)
-#define BITMAP_ALLOCATOR_H
+#pragma once
 
 /* Includes ------------------------------------------------------------------*/
 
@@ -24,7 +21,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdint.h>
-#include <limits.h>
+#include <limits.h> // needed for CHAR_BIT
 
 /* Exported macro ------------------------------------------------------------*/
 
@@ -81,6 +78,4 @@ BitmapAllocator_free(Allocator* allocator, void* ptr);
 void
 BitmapAllocator_dtor(Allocator* allocator);
 
-
-#endif /* BITMAP_ALLOCATOR_H */
 ///@}
