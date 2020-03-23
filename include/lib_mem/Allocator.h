@@ -14,7 +14,7 @@
 
 #include "lib_compiler/compiler.h"
 
-#include "lib_debug/Debug.h"
+#include "SeosLogger.h"
 
 #include <stddef.h>
 #include <string.h>

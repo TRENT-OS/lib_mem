@@ -4,7 +4,7 @@
 /* Includes ------------------------------------------------------------------*/
 
 #include "lib_mem/BitmapAllocator.h"
-#include "lib_debug/Debug.h"
+#include "SeosLogger.h"
 #include "lib_mem/Memory.h"
 #include "lib_logs/Logger.h"
 
