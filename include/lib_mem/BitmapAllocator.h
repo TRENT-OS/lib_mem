@@ -33,7 +33,7 @@
 /* Exported types ------------------------------------------------------------*/
 
 typedef struct BitmapAllocator BitmapAllocator;
-typedef BitMapInt BitmapAllocator_BitmapSlot;
+typedef BitmapInt BitmapAllocator_BitmapSlot;
 
 struct BitmapAllocator
 {

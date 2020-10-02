@@ -43,7 +43,7 @@ isAllocatedElem(BitmapAllocator* self, size_t elementNum)
     size_t slot     = SLOT(self, elementNum);
     size_t offset   = OFFSET(self, elementNum);
 
-    return BitMap_GET_BIT(self->bitmap[slot], offset);
+    return Bitmap_GET_BIT(self->bitmap[slot], offset);
 }
 
 INLINE bool
@@ -70,7 +70,7 @@ isBoundaryElem(BitmapAllocator* self, size_t elementNum)
     size_t slot     = SLOT(self, elementNum);
     size_t offset   = OFFSET(self, elementNum);
 
-    return BitMap_GET_BIT(self->boundaryBitmap[slot], offset);
+    return Bitmap_GET_BIT(self->boundaryBitmap[slot], offset);
 }
 
 INLINE bool
@@ -107,7 +107,7 @@ findContiguousFreeElements(BitmapAllocator* self, size_t numElements)
             {
                 return NULL; // out of range
             }
-            else if (!BitMap_GET_BIT(self->bitmap[slot], offset))
+            else if (!Bitmap_GET_BIT(self->bitmap[slot], offset))
             {
                 //Debug_LOG_TRACE("%s: free at slot %zd offset %zd",
                 //                __func__, slot, offset);
@@ -152,11 +152,11 @@ markBitmapBusy(BitmapAllocator* self, void* ptr, size_t numElements)
 
         Debug_ASSERT(!isAllocatedElem(self, elementNum));
         Debug_ASSERT(!isBoundaryElem(self, elementNum));
-        BitMap_SET_BIT(self->bitmap[slot], offset);
+        Bitmap_SET_BIT(self->bitmap[slot], offset);
     }
     // set the boundary bit
     size_t lastElementNum = baseElementNum + numElements - 1;
-    BitMap_SET_BIT(self->boundaryBitmap[SLOT(self, lastElementNum)],
+    Bitmap_SET_BIT(self->boundaryBitmap[SLOT(self, lastElementNum)],
                    OFFSET(self, lastElementNum));
 }
 // precondition is that ptr is within our boundaries and already marked
@@ -179,12 +179,12 @@ markBitmapFree(BitmapAllocator* self, void* ptr, size_t numElements)
         //                __func__, offset, slot);
 
         Debug_ASSERT(isAllocatedElem(self, elementNum));
-        BitMap_CLR_BIT(self->bitmap[slot], offset);
+        Bitmap_CLR_BIT(self->bitmap[slot], offset);
     }
     // reset the boundary bit
     size_t lastElementNum = baseElementNum + numElements - 1;
     Debug_ASSERT(isBoundaryElem(self, lastElementNum));
-    BitMap_CLR_BIT(self->boundaryBitmap[SLOT(self, lastElementNum)],
+    Bitmap_CLR_BIT(self->boundaryBitmap[SLOT(self, lastElementNum)],
                    OFFSET(self, lastElementNum));
 }
 
