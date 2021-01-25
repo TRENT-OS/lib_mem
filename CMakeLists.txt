@@ -49,3 +49,26 @@ target_link_libraries(${PROJECT_NAME}
         lib_util
         lib_osal
 )
+
+#-------------------------------------------------------------------------------
+# MOCKS
+#-------------------------------------------------------------------------------
+if (BUILD_TESTING)
+    add_library("${PROJECT_NAME}_mocks" INTERFACE)
+
+    target_include_directories("${PROJECT_NAME}_mocks"
+        INTERFACE
+            "mocks/include"
+            "include"
+    )
+
+    target_compile_definitions("${PROJECT_NAME}_mocks"
+        INTERFACE
+            -DMEMORY_CONFIG_H_FILE=mem_config.h
+    )
+
+    target_link_libraries("${PROJECT_NAME}_mocks"
+        INTERFACE
+            lib_compiler_mocks
+    )
+endif ()
