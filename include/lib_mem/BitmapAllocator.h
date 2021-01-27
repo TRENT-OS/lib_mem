@@ -7,7 +7,7 @@
  * @brief a bitmap based allocator
  *
  *
- * Copyright (C) 2019, Hensoldt Cyber GmbH
+ * Copyright (C) 2019, HENSOLDT Cyber GmbH
  */
 #pragma once
 

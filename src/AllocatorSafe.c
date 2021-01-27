@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2019, Hensoldt Cyber GmbH
+ *  Copyright (C) 2019, HENSOLDT Cyber GmbH
  */
 /* Includes ------------------------------------------------------------------*/
 #include "lib_mem/AllocatorSafe.h"

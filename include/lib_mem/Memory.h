@@ -1,7 +1,7 @@
 /*
  *  LibMem
  *
- *  Copyright (C) 2018, Hensoldt Cyber GmbH
+ *  Copyright (C) 2018, HENSOLDT Cyber GmbH
  */
 
 #pragma once
