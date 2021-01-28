@@ -26,21 +26,17 @@ target_include_directories(${PROJECT_NAME}
 )
 
 if (DEBUG_CONFIG_H_FILE)
-
     target_compile_definitions(${PROJECT_NAME}
         INTERFACE
             "DEBUG_CONFIG_H_FILE=${DEBUG_CONFIG_H_FILE}"
     )
-
 endif ()
 
 if (MEMORY_CONFIG_H_FILE)
-
     target_compile_definitions(${PROJECT_NAME}
         INTERFACE
             "MEMORY_CONFIG_H_FILE=${MEMORY_CONFIG_H_FILE}"
         )
-
 endif ()
 
 target_link_libraries(${PROJECT_NAME}
