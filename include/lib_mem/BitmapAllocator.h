@@ -1,5 +1,5 @@
 /**
- * @addtogroup LibMem
+ * @addtogroup lib_mem
  * @{
  *
  * @file BitmapAllocator.h

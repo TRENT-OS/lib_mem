@@ -1,5 +1,5 @@
 /*
- *  LibMem
+ *  lib_mem
  *
  *  Copyright (C) 2018, HENSOLDT Cyber GmbH
  */
