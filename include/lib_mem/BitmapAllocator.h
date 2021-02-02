@@ -16,7 +16,7 @@
 #include "lib_compiler/compiler.h"
 
 #include "lib_mem/Allocator.h"
-#include "lib_util/Bitmap.h"
+#include "lib_utils/Bitmap.h"
 
 #include <stddef.h>
 #include <string.h>

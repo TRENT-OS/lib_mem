@@ -46,7 +46,7 @@ target_link_libraries(${PROJECT_NAME}
         lib_debug
         lib_logs
         lib_mem
-        lib_util
+        lib_utils
         lib_osal
 )
 
@@ -61,7 +61,7 @@ if (BUILD_TESTING)
         MOCKS
             lib_compiler_mocks
             lib_debug_mocks
-            lib_util_mocks
+            lib_utils_mocks
             lib_logs_mocks
             lib_osal_mocks
     )
