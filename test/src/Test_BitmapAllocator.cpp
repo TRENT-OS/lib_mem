@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2019, HENSOLDT Cyber GmbH
+ *  Copyright (C) 2019-2021, HENSOLDT Cyber GmbH
  */
 
 #include <gtest/gtest.h>
