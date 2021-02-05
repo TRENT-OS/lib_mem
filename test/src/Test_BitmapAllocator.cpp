@@ -40,6 +40,25 @@ class Test_BitmapAllocator : public testing::Test
         }
 };
 
+class Test_BitmapAllocator_parameterizedFixture :
+    public ::testing::TestWithParam<int>
+{
+    protected:
+        BitmapAllocator bmAllocator;
+        void* baseAddr = NULL;
+        void SetUp()
+        {
+            ASSERT_TRUE(BitmapAllocator_ctor(
+                            &bmAllocator,
+                            kElementSize,
+                            kNumMemoryElements));
+        }
+        void TearDown()
+        {
+            BitmapAllocator_dtor(BitmapAllocator_TO_ALLOCATOR(&bmAllocator));
+        }
+};
+
 static void
 allocate_full_memory_until_boundary(BitmapAllocator* bmAllocator,
                                     void** baseAddr)
@@ -69,6 +88,51 @@ allocate_full_memory_until_boundary(BitmapAllocator* bmAllocator,
 
     addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(bmAllocator),
                                  kElementSize);
+    ASSERT_NE(addr, nullptr);
+}
+
+// Parameterized test case verifying that valid allocation requests (with a
+// correct size in regards to the offered space) will succeed and invalid
+// requests with sizes outside of the possible memory range will fail.
+TEST_P(Test_BitmapAllocator_parameterizedFixture,
+       allocate_element)
+{
+    int requestedElements = GetParam();
+
+    baseAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
+                                     kElementSize * requestedElements);
+
+    if (requestedElements > 0 && requestedElements <= kNumMemoryElements)
+    {
+        // Valid values should return a pointer to the allocated space
+        ASSERT_NE(baseAddr, nullptr);
+    }
+    else
+    {
+        // Invalid values should return empty
+        ASSERT_EQ(baseAddr, nullptr);
+    }
+}
+
+INSTANTIATE_TEST_CASE_P(allocate_elements_varying_sizes,
+                        Test_BitmapAllocator_parameterizedFixture,
+                        ::testing::Values(-1, 0, 1,
+                                          (kNumMemoryElements / 2),
+                                          kNumMemoryElements,
+                                          (kNumMemoryElements + 1)));
+
+
+TEST_F(Test_BitmapAllocator, free_allocated_element_pos)
+{
+    // BitmapAllocator_free() does not return anything so to test it, first
+    // allocate the whole available space, free some space and reallocate to
+    // test the functionality
+    allocate_full_memory_until_boundary(&bmAllocator, &baseAddr);
+
+    BitmapAllocator_free(BitmapAllocator_TO_ALLOCATOR(&bmAllocator), baseAddr);
+
+    void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
+                                       kElementSize);
     ASSERT_NE(addr, nullptr);
 }
 
