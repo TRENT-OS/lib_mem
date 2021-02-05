@@ -147,8 +147,8 @@ TEST_F(Test_BitmapAllocator_fullMemorySetUp, free_allocated_element_pos)
     ASSERT_NE(addr, nullptr);
 }
 
-// test free all memory and then make big alloc
-TEST_F(Test_BitmapAllocator_fullMemorySetUp, free_all_and_realloc_in_once)
+// Free all memory and then make big alloc
+TEST_F(Test_BitmapAllocator_fullMemorySetUp, free_all_and_realloc_pos)
 {
     for (unsigned i = 0; i < kAllocatorBufSize; i++)
     {
@@ -156,10 +156,7 @@ TEST_F(Test_BitmapAllocator_fullMemorySetUp, free_all_and_realloc_in_once)
                              &((char*) baseAddr)[i]);
     }
     void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                       kAllocatorBufSize + 1);
-    ASSERT_EQ(addr, nullptr);
-    addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                 kAllocatorBufSize);
+                                       kAllocatorBufSize);
     ASSERT_EQ(addr, baseAddr);
 }
 
