@@ -94,6 +94,23 @@ class Test_BitmapAllocator_parameterizedFixture :
         }
 };
 
+class Test_BitmapAllocator_parameterizedFixtureFullMemory :
+    public Test_BitmapAllocator_parameterizedFixture
+{
+    protected:
+        void SetUp()
+        {
+            ASSERT_TRUE(BitmapAllocator_ctor(
+                            &bmAllocator,
+                            kElementSize,
+                            kNumMemoryElements));
+
+            Test_BitmapAllocator_allocateFullMemory(
+                &bmAllocator,
+                &baseAddr);
+        }
+};
+
 /*----------------------------------------------------------------------------*/
 // Parameterized test case verifying that valid allocation requests (with a
 // correct size in regards to the offered space) will succeed and invalid
@@ -135,19 +152,35 @@ TEST_F(Test_BitmapAllocator_fullMemorySetUp,
     ASSERT_EQ(baseAddr, nullptr);
 }
 
-TEST_F(Test_BitmapAllocator_fullMemorySetUp, free_allocated_element_pos)
+// Free varying amounts of previously allocated elements.
+TEST_P(Test_BitmapAllocator_parameterizedFixtureFullMemory,
+       free_allocated_element_pos)
 {
-    // BitmapAllocator_free() does not return anything so to test it, first
-    // allocate the whole available space, free some space and reallocate to
-    // test the functionality
-    BitmapAllocator_free(BitmapAllocator_TO_ALLOCATOR(&bmAllocator), baseAddr);
+    int requestedElements = GetParam();
+    ASSERT_LE(requestedElements, kAllocatorBufSize);
+    ASSERT_GT(requestedElements, 0);
+
+    for (unsigned i = 0; i < (requestedElements * kElementSize); i++)
+    {
+        // BitmapAllocator_free() does not return anything so to test it, first
+        // allocate the whole available space, free some space and reallocate to
+        // test the functionality
+        BitmapAllocator_free(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
+                             &((char*) baseAddr)[i]);
+    }
 
     void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                       kElementSize);
+                                       (requestedElements * kElementSize));
     ASSERT_NE(addr, nullptr);
 }
 
-// Free all memory and then make big alloc
+INSTANTIATE_TEST_CASE_P(free_allocated_elements_varying_sizes,
+                        Test_BitmapAllocator_parameterizedFixtureFullMemory,
+                        ::testing::Values(1, 2, 3, 5,
+                                          (kNumMemoryElements / 2),
+                                          kNumMemoryElements));
+
+// Free all memory and then make big alloc.
 TEST_F(Test_BitmapAllocator_fullMemorySetUp, free_all_and_realloc_pos)
 {
     for (unsigned i = 0; i < kAllocatorBufSize; i++)
