@@ -16,7 +16,9 @@ extern "C"
 constexpr unsigned kNumMemoryElements = (((sizeof(BitmapAllocator_BitmapSlot) *
                                            CHAR_BIT) * 2) + 1);
 // Test-Elements are uint64_t data
-constexpr unsigned kAllocatorBufSize = (kNumMemoryElements* sizeof(uint64_t));
+constexpr unsigned kElementSize = sizeof(uint64_t);
+
+constexpr unsigned kAllocatorBufSize = (kNumMemoryElements* kElementSize);
 
 static BitmapAllocator bmAllocator;
 static void* baseAddr = NULL;
@@ -29,7 +31,7 @@ class Test_BitmapAllocator : public testing::Test
 TEST(Test_BitmapAllocator, construction)
 {
     bool ok = BitmapAllocator_ctor(&bmAllocator,
-                                   sizeof(uint64_t),
+                                   kElementSize,
                                    kNumMemoryElements);
     ASSERT_TRUE(ok);
 }
@@ -38,8 +40,7 @@ static void
 allocate_full_memory_until_boundary(void)
 {
     void* lastAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(
-                                               &bmAllocator),
-                                           sizeof(uint64_t) * 2);
+                                               &bmAllocator), kElementSize * 2);
     ASSERT_NE(lastAddr, nullptr);
 
     baseAddr = lastAddr;
@@ -52,17 +53,17 @@ allocate_full_memory_until_boundary(void)
     for (unsigned i = 0; i < kNumMemoryElements / 2 - 1; i++)
     {
         void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                           sizeof(uint64_t) * 2);
+                                           kElementSize * 2);
         ASSERT_NE(addr, nullptr);
-        ASSERT_EQ((uintptr_t) addr, (uintptr_t) lastAddr + sizeof(uint64_t) * 2);
+        ASSERT_EQ((uintptr_t) addr, (uintptr_t) lastAddr + kElementSize * 2);
         lastAddr = addr;
     }
     void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                       sizeof(uint64_t) * 2);
+                                       kElementSize * 2);
     ASSERT_EQ(addr, nullptr);
 
     addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                 sizeof(uint64_t));
+                                 kElementSize);
     ASSERT_NE(addr, nullptr);
 }
 
@@ -77,25 +78,23 @@ TEST(Test_BitmapAllocator, create_a_hole_and_find_back_space_there)
     BitmapAllocator_free(BitmapAllocator_TO_ALLOCATOR(&bmAllocator), addr);
     // check that fails if require more
     void* newAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(
-                                              &bmAllocator),
-                                          sizeof(uint64_t) * 3);
+                                              &bmAllocator), kElementSize * 3);
     ASSERT_EQ(newAddr, nullptr);
     // check that works if we reuire exactly the same an then free
     newAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(
-                                        &bmAllocator),
-                                    sizeof(uint64_t) * 2);
+                                        &bmAllocator), kElementSize * 2);
     ASSERT_EQ((uintptr_t) newAddr, (uintptr_t) addr);
     BitmapAllocator_free(BitmapAllocator_TO_ALLOCATOR(&bmAllocator), addr);
     // check that works if we require twice an half
     newAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                    sizeof(uint64_t));
+                                    kElementSize);
     ASSERT_EQ((uintptr_t) newAddr, (uintptr_t) addr);
     newAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                    sizeof(uint64_t));
-    ASSERT_EQ((uintptr_t) newAddr, (uintptr_t) addr + sizeof(uint64_t));
+                                    kElementSize);
+    ASSERT_EQ((uintptr_t) newAddr, (uintptr_t) addr + kElementSize);
     // check that fails again when the memory is already fully taken
     newAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                    sizeof(uint64_t));
+                                    kElementSize);
     ASSERT_EQ(newAddr, nullptr);
 }
 
