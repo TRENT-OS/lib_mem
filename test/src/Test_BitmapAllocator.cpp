@@ -20,30 +20,35 @@ constexpr unsigned kElementSize = sizeof(uint64_t);
 
 constexpr unsigned kAllocatorBufSize = (kNumMemoryElements* kElementSize);
 
-static BitmapAllocator bmAllocator;
-static void* baseAddr = NULL;
 
 class Test_BitmapAllocator : public testing::Test
 {
     protected:
+        BitmapAllocator bmAllocator;
+        void* baseAddr = NULL;
+        void SetUp()
+        {
+            ASSERT_TRUE(BitmapAllocator_ctor(
+                            &bmAllocator,
+                            kElementSize,
+                            kNumMemoryElements));
+        }
+
+        void TearDown()
+        {
+            BitmapAllocator_dtor(BitmapAllocator_TO_ALLOCATOR(&bmAllocator));
+        }
 };
 
-TEST(Test_BitmapAllocator, construction)
-{
-    bool ok = BitmapAllocator_ctor(&bmAllocator,
-                                   kElementSize,
-                                   kNumMemoryElements);
-    ASSERT_TRUE(ok);
-}
-
 static void
-allocate_full_memory_until_boundary(void)
+allocate_full_memory_until_boundary(BitmapAllocator* bmAllocator,
+                                    void** baseAddr)
 {
     void* lastAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(
-                                               &bmAllocator), kElementSize * 2);
+                                               bmAllocator), kElementSize * 2);
     ASSERT_NE(lastAddr, nullptr);
 
-    baseAddr = lastAddr;
+    *baseAddr = lastAddr;
 
     // this will allocate the memory by twos elements that is why the limit of
     // the loop is set to kNumMemoryElements / 2, moreover the number of elements
@@ -52,28 +57,30 @@ allocate_full_memory_until_boundary(void)
     // extra element are added at the end.
     for (unsigned i = 0; i < kNumMemoryElements / 2 - 1; i++)
     {
-        void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
+        void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(bmAllocator),
                                            kElementSize * 2);
         ASSERT_NE(addr, nullptr);
         ASSERT_EQ((uintptr_t) addr, (uintptr_t) lastAddr + kElementSize * 2);
         lastAddr = addr;
     }
-    void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
+    void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(bmAllocator),
                                        kElementSize * 2);
     ASSERT_EQ(addr, nullptr);
 
-    addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
+    addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(bmAllocator),
                                  kElementSize);
     ASSERT_NE(addr, nullptr);
 }
 
-TEST(Test_BitmapAllocator, allocate_full_memory_until_boundary)
+TEST_F(Test_BitmapAllocator, allocate_full_memory_until_boundary)
 {
-    return allocate_full_memory_until_boundary();
+    return allocate_full_memory_until_boundary(&bmAllocator, &baseAddr);
 }
 
-TEST(Test_BitmapAllocator, create_a_hole_and_find_back_space_there)
+TEST_F(Test_BitmapAllocator, create_a_hole_and_find_back_space_there)
 {
+    allocate_full_memory_until_boundary(&bmAllocator, &baseAddr);
+
     void* addr = &((uint64_t*) baseAddr)[kNumMemoryElements / 2];
     BitmapAllocator_free(BitmapAllocator_TO_ALLOCATOR(&bmAllocator), addr);
     // check that fails if require more
@@ -99,8 +106,10 @@ TEST(Test_BitmapAllocator, create_a_hole_and_find_back_space_there)
 }
 
 // test free all memory and then make big alloc
-TEST(Test_BitmapAllocator, free_all_and_realloc)
+TEST_F(Test_BitmapAllocator, free_all_and_realloc)
 {
+    allocate_full_memory_until_boundary(&bmAllocator, &baseAddr);
+
     for (unsigned i = 0; i < kAllocatorBufSize; i++)
     {
         BitmapAllocator_free(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
@@ -109,12 +118,14 @@ TEST(Test_BitmapAllocator, free_all_and_realloc)
     void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
                                        kAllocatorBufSize + 1);
     ASSERT_EQ(addr, nullptr);
-    allocate_full_memory_until_boundary();
+    allocate_full_memory_until_boundary(&bmAllocator, &baseAddr);
 }
 
 // test free all memory and then make big alloc
-TEST(Test_BitmapAllocator, free_all_and_realloc_in_once)
+TEST_F(Test_BitmapAllocator, free_all_and_realloc_in_once)
 {
+    allocate_full_memory_until_boundary(&bmAllocator, &baseAddr);
+
     for (unsigned i = 0; i < kAllocatorBufSize; i++)
     {
         BitmapAllocator_free(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
