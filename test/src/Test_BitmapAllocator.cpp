@@ -20,7 +20,7 @@ constexpr unsigned kElementSize = sizeof(uint64_t);
 
 constexpr unsigned kAllocatorBufSize = (kNumMemoryElements* kElementSize);
 
-
+/*----------------------------------------------------------------------------*/
 class Test_BitmapAllocator : public testing::Test
 {
     protected:
@@ -91,6 +91,7 @@ allocate_full_memory_until_boundary(BitmapAllocator* bmAllocator,
     ASSERT_NE(addr, nullptr);
 }
 
+/*----------------------------------------------------------------------------*/
 // Parameterized test case verifying that valid allocation requests (with a
 // correct size in regards to the offered space) will succeed and invalid
 // requests with sizes outside of the possible memory range will fail.
