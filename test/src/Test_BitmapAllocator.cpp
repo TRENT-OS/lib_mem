@@ -94,38 +94,6 @@ class Test_BitmapAllocator_parameterizedFixture :
         }
 };
 
-static void
-allocate_full_memory_until_boundary(BitmapAllocator* bmAllocator,
-                                    void** baseAddr)
-{
-    void* lastAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(
-                                               bmAllocator), kElementSize * 2);
-    ASSERT_NE(lastAddr, nullptr);
-
-    *baseAddr = lastAddr;
-
-    // this will allocate the memory by twos elements that is why the limit of
-    // the loop is set to kNumMemoryElements / 2, moreover the number of elements
-    // was purposely set not to be a multiple of BitmapAllocator_BitmapSlot, two
-    // extra elements are added at the enBitmapAllocator_BitmapSlot, one
-    // extra element are added at the end.
-    for (unsigned i = 0; i < kNumMemoryElements / 2 - 1; i++)
-    {
-        void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(bmAllocator),
-                                           kElementSize * 2);
-        ASSERT_NE(addr, nullptr);
-        ASSERT_EQ((uintptr_t) addr, (uintptr_t) lastAddr + kElementSize * 2);
-        lastAddr = addr;
-    }
-    void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(bmAllocator),
-                                       kElementSize * 2);
-    ASSERT_EQ(addr, nullptr);
-
-    addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(bmAllocator),
-                                 kElementSize);
-    ASSERT_NE(addr, nullptr);
-}
-
 /*----------------------------------------------------------------------------*/
 // Parameterized test case verifying that valid allocation requests (with a
 // correct size in regards to the offered space) will succeed and invalid
@@ -157,6 +125,15 @@ INSTANTIATE_TEST_CASE_P(allocate_elements_varying_sizes,
                                           kNumMemoryElements,
                                           (kNumMemoryElements + 1)));
 
+// Verify that once all available memory has been allocated, an additional
+// request to allocate more space will fail.
+TEST_F(Test_BitmapAllocator_fullMemorySetUp,
+       allocate_element_after_memory_is_full_neg)
+{
+    baseAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
+                                     kElementSize);
+    ASSERT_EQ(baseAddr, nullptr);
+}
 
 TEST_F(Test_BitmapAllocator_fullMemorySetUp, free_allocated_element_pos)
 {
@@ -168,38 +145,6 @@ TEST_F(Test_BitmapAllocator_fullMemorySetUp, free_allocated_element_pos)
     void* addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
                                        kElementSize);
     ASSERT_NE(addr, nullptr);
-}
-
-TEST_F(Test_BitmapAllocator, allocate_full_memory_until_boundary)
-{
-    return allocate_full_memory_until_boundary(&bmAllocator, &baseAddr);
-}
-
-TEST_F(Test_BitmapAllocator_fullMemorySetUp,
-       create_a_hole_and_find_back_space_there)
-{
-    void* addr = &((uint64_t*) baseAddr)[kNumMemoryElements / 2];
-    BitmapAllocator_free(BitmapAllocator_TO_ALLOCATOR(&bmAllocator), addr);
-    // check that fails if require more
-    void* newAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(
-                                              &bmAllocator), kElementSize * 3);
-    ASSERT_EQ(newAddr, nullptr);
-    // check that works if we reuire exactly the same an then free
-    newAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(
-                                        &bmAllocator), kElementSize * 2);
-    ASSERT_EQ((uintptr_t) newAddr, (uintptr_t) addr);
-    BitmapAllocator_free(BitmapAllocator_TO_ALLOCATOR(&bmAllocator), addr);
-    // check that works if we require twice an half
-    newAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                    kElementSize);
-    ASSERT_EQ((uintptr_t) newAddr, (uintptr_t) addr);
-    newAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                    kElementSize);
-    ASSERT_EQ((uintptr_t) newAddr, (uintptr_t) addr + kElementSize);
-    // check that fails again when the memory is already fully taken
-    newAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
-                                    kElementSize);
-    ASSERT_EQ(newAddr, nullptr);
 }
 
 // test free all memory and then make big alloc
@@ -229,6 +174,37 @@ TEST_F(Test_BitmapAllocator_fullMemorySetUp, free_all_and_realloc_in_once)
     addr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(&bmAllocator),
                                  kAllocatorBufSize);
     ASSERT_EQ(addr, baseAddr);
+}
+
+// Free an element in the middle of the fully allocated memory and verify that
+// this freed space can be reallocated successfully.
+TEST_F(Test_BitmapAllocator_fullMemorySetUp,
+       free_space_in_the_middle_and_reallocate_pos)
+{
+    // Free space in the middle of the allocated memory
+    void* addr = &((uint64_t*) baseAddr)[kNumMemoryElements / 2];
+    BitmapAllocator_free(BitmapAllocator_TO_ALLOCATOR(&bmAllocator), addr);
+
+    // Verify that the freed space in the middle can be reallocated
+    void* reallocatedAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(
+                                                      &bmAllocator), kElementSize);
+    ASSERT_EQ(reallocatedAddr, addr);
+}
+
+// Free an element in the middle of the fully allocated memory and verify that
+// reallocation will fail if more space is requested than the freed gap provides.
+TEST_F(Test_BitmapAllocator_fullMemorySetUp,
+       free_space_in_the_middle_and_reallocate_neg)
+{
+    // Free space in the middle of the allocated memory
+    void* addr = &((uint64_t*) baseAddr)[kNumMemoryElements / 2];
+    BitmapAllocator_free(BitmapAllocator_TO_ALLOCATOR(&bmAllocator), addr);
+
+    // Ask for more than the freed gap provides
+    void* reallocatedAddr = BitmapAllocator_alloc(BitmapAllocator_TO_ALLOCATOR(
+                                                      &bmAllocator),
+                                                  kElementSize * 2);
+    ASSERT_EQ(reallocatedAddr, nullptr);
 }
 
 int main(int argc, char* argv[])
