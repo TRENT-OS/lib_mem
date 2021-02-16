@@ -51,41 +51,9 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 #-------------------------------------------------------------------------------
-# TESTS
+# TESTING
 #-------------------------------------------------------------------------------
 if (BUILD_TESTING)
-    include("${TEST_MAIN_DIR}/test.cmake")
-    add_test_target(${PROJECT_NAME}
-        SOURCES
-            "test/src/Test_BitmapAllocator.cpp"
-        MOCKS
-            lib_compiler_mocks
-            lib_debug_mocks
-            lib_utils_mocks
-            lib_logs_mocks
-            lib_osal_mocks
-    )
-endif ()
-
-#-------------------------------------------------------------------------------
-# MOCKS
-#-------------------------------------------------------------------------------
-if (BUILD_TESTING)
-    add_library("${PROJECT_NAME}_mocks" INTERFACE)
-
-    target_include_directories("${PROJECT_NAME}_mocks"
-        INTERFACE
-            "mocks/include"
-            "include"
-    )
-
-    target_compile_definitions("${PROJECT_NAME}_mocks"
-        INTERFACE
-            -DMEMORY_CONFIG_H_FILE=mem_config.h
-    )
-
-    target_link_libraries("${PROJECT_NAME}_mocks"
-        INTERFACE
-            lib_compiler_mocks
-    )
+    add_subdirectory(test)
+    add_subdirectory(mocks)
 endif ()
