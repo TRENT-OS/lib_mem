@@ -45,7 +45,6 @@ target_link_libraries(${PROJECT_NAME}
         lib_compiler
         lib_debug
         lib_logs
-        lib_mem
         lib_utils
         lib_osal
 )
