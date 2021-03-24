@@ -71,8 +71,7 @@ AllocatorSafe_free(Allocator* allocator, void* ptr)
 void
 AllocatorSafe_dtor(Allocator* stream)
 {
-    AllocatorSafe* self = (AllocatorSafe*) stream;
-    Debug_ASSERT_SELF(self);
+    Debug_ASSERT_SELF(stream);
 }
 
 
