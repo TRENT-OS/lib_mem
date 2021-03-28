@@ -382,22 +382,21 @@ BitmapAllocator_free(Allocator* allocator, void* ptr)
     }
 }
 
+#if !defined(Memory_Config_STATIC)
 void
 BitmapAllocator_dtor(Allocator* stream)
 {
     BitmapAllocator* self = (BitmapAllocator*) stream;
     Debug_ASSERT_SELF(self);
 
-#if !defined(Memory_Config_STATIC)
     if (!self->isStatic)
     {
         Memory_free(self->baseAddr);
         Memory_free((void*) self->bitmap);
         Memory_free((void*) self->boundaryBitmap);
     }
-#endif
 }
-
+#endif
 
 /* Private functions ---------------------------------------------------------*/
 

@@ -75,7 +75,9 @@ BitmapAllocator_alloc(Allocator* allocator, size_t size);
 void
 BitmapAllocator_free(Allocator* allocator, void* ptr);
 
+#if !defined(Memory_Config_STATIC)
 void
 BitmapAllocator_dtor(Allocator* allocator);
+#endif
 
 ///@}
