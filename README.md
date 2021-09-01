@@ -1,3 +1,3 @@
-# The Memory Library
+# Memory Library
 
-This repository contains utilities related to the memory management.
+The library provides utilities related to memory management.
