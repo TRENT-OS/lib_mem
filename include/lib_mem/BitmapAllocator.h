@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2019-2024, HENSOLDT Cyber GmbH
+ * 
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * For commercial licensing, contact: info.cyber@hensoldt.net
+*/
+
 /**
  * @addtogroup lib_mem
  * @{
@@ -5,9 +13,6 @@
  * @file BitmapAllocator.h
  *
  * @brief a bitmap based allocator
- *
- *
- * Copyright (C) 2019, HENSOLDT Cyber GmbH
  */
 #pragma once
 

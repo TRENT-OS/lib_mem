@@ -1,8 +1,13 @@
 /*
- *  lib_mem
+ * lib_mem
  *
- *  Copyright (C) 2018, HENSOLDT Cyber GmbH
- */
+ * Copyright (C) 2018-2024, HENSOLDT Cyber GmbH
+ * 
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * For commercial licensing, contact: info.cyber@hensoldt.net
+*/
+
 #pragma once
 
 #if defined(Memory_Config_USE_STDLIB_ALLOC)
